@@ -1,0 +1,46 @@
+title: $:/plugins/OokTech/Bob/ControlPanelTab
+tags: $:/tags/ControlPanel
+caption: Bob Settings
+
+Wiki Server Address (<$reveal type='nomatch' state='$:/ServerIP!!host' text='0.0.0.0'>not </$reveal>available on local network):
+
+<pre>{{$:/ServerIP}}:{{$:/ServerIP!!port}}
+</pre>
+
+<$reveal
+  type='match'
+  state='$:/WikiName'
+  text='RootWiki'
+>
+
+<$checkbox
+  tiddler='$:/plugins/OokTech/Bob/Wiki Listing'
+  tag='$:/tags/SideBar'
+>
+  List available wikis in sidebar
+</$checkbox>
+
+<<tabs "[[$:/plugins/OokTech/Bob/AvailableWikisTab]][[$:/plugins/OokTech/Bob/ManualSettingsTab]][[$:/plugins/OokTech/Bob/SelectPlugins]][[$:/plugins/OokTech/Bob/ServerActionsTab]][[$:/plugins/OokTech/Bob/Bob Documentation]][[$:/plugins/OokTech/Bob/OokTechInfo]]" "$:/plugins/OokTech/Bob/AvailableWikisTab">>
+
+</$reveal>
+
+<$reveal
+  type='nomatch'
+  state='$:/WikiName'
+  text='RootWiki'
+>
+
+!! Available Wikis
+
+<$checkbox
+  tiddler='$:/plugins/OokTech/Bob/Wiki Listing'
+  tag='$:/tags/SideBar'
+>
+  List available wikis in sidebar
+</$checkbox>
+
+Other settings should only be changed from the root wiki.
+
+<<tabs "[[$:/plugins/OokTech/Bob/Wiki Listing]][[$:/plugins/OokTech/Bob/SelectPlugins]]" "$:/plugins/OokTech/Bob/Wiki Listing">>
+
+</$reveal>

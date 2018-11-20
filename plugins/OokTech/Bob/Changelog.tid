@@ -1,0 +1,201 @@
+title: $:/plugins/OokTech/Bob/Changelog
+
+!! Version 1.1.0 (ongoing)
+
+- Add `savePluginFolder` web socket message to save packaged plugins as folders
+  on a server. These plugins can then be available to other served wikis and in
+  the plugin library, if it is enabled.
+- Add the `import` borwser message handler to make fetching nicer
+- Add options for how to handle conflicts for `internalFetch`
+- `internalFetch` now displays a list of imported tiddlers
+- Added a way to change which plugins a wiki uses from inside the wiki
+  - In the Bob Settings tab there is a Manage Plugins tab
+- Added an interface to save plugins to the server and to select which plugins
+  from the server should be used in the current wiki
+- Change the internals to make one $tw.Wiki object for each wiki instead of
+  having them all in $tw.wiki
+  - There are lots of internal changes to make this work
+  - $tw.boot.files still uses the prefixed name
+- Streamlined and simplified the file system monitor
+  - It should now watch new subfolders inside the tiddlers folder
+- Environment variables are now set from the plugin, themes, and languages paths
+  given in the settings.
+  - This is needed by the core to properly list available plugins
+  - This means that you can set the location of one folder listing plugins,
+    themes and languages in the settings instead of using environment
+    variables. At the moment this is limited to one folder.
+- The `unloadWiki` message now ensures that the connection to any browsers with
+  that wiki open are closed correctly.
+- Updates to the `buildHTMLWiki` message
+  - You can now pull tiddlers in from any served wiki while making an html
+    file. This means you can combine wikis in the output.
+  - There is a default filter for excluding plugins like Bob and components
+    that are only useful on a server
+  - You can add an additional filter to exclude tiddlers from the exported html
+    wiki
+  - You can disable the default exclude list for more control
+- The `$:/config/FileSystemPaths` settings should work now
+
+!! Version 1.0.6 Salt Bagels 2: Bagel Harder
+
+- Now the server only uses one port for both websockets and http(s) traffic
+- Add paths for the plugin library to the normal Bob server
+
+!! Version 1.0.5 Salt Bagles
+
+- Added fetch and push routes to the `ws-server`
+  - There are currently only placeholder functions for access control
+- Updated external libraries to the newest versions (npm modules `ip`, `ws` and
+  `async-limiter`)
+  - `ip` is used to get the ip address of the server to make connecting
+    multiple computers easier
+  - `ws` adds a websocket interface to the server side
+  - `async-limiter` is needed by `ws`
+  - Now the external libraries correctly use `tiddlywiki.files` files instead
+    of the previous fragile hacky way.
+- Updated documentation and added a tab in the Bob section of the
+  $:/ControlPanel for Bob documentation.
+- Bob now prints out the TiddlyWiki and Bob versions being used in the terminal
+  when you start the server.
+- The Save Wiki button is disabled because it isn't useful (later I may make it
+  download a non-bob single file wiki)
+
+!! Version 1.0.4 Sourdough Pizza
+
+- The disconnected message is now much smaller because you can keep working on
+  the wiki and reconnect.
+- Added the internalFetch message to match the --fetch command in the core.
+  - It fetches tiddlers from another wiki on the same Bob server
+  - Tiddlers to import are selected by a filter
+  - There is an optional transform filter that can modify the imported tiddlers
+    titles (you can add prefixes/suffixes, etc.)
+  - Conflict resolution uses the same system as resyncing to the server.
+
+!! Version 1.0.3 Sourdough Crumpets
+
+- Fixed/Updated documentation
+  - Added note about buildHTMLWiki message
+- Fixed a bug that would keep old tiddlers after they were renamed.
+  - It also sometimes kept old tiddlers that were deleted and then the wiki was
+    reloaded.
+- Partially fixed a related bug that would sometimes keep old versions of
+  tiddlers if they were renamed on the file system while the wiki is running.
+  - This is only partially fixed. The behaviour is inconsistent. I need to find
+    reproducible ways to cause it.
+- Added the 'unloadWiki' message that unloads a loaded wiki.
+  - This can be used to change the plugins loaded in a wiki and to just remove
+    wikis from memory if they aren't being used. That second one may not be
+    very useful because wikis don't take much memory.
+  - There is currently no handling for what happens when you unload a wiki
+    while someone is using it. So beware.
+- Added a hook to be used by external servers when you create a new wiki
+  - This lets you set the correct access permissions on wikis created from
+    within tiddlywiki when you are using an external server.
+- Added detection and recovery of lost websocket messages to ensure that all
+  changes to a wiki are properly saved on the server and that all changes on
+  the server make it to all of the browsers.
+  - This update also gives much more consistent handling to all messages
+  - There is a short delay before sending saveTiddler messages, this prevents a
+    bug that would cause errors saving changes to tiddler edited without using
+    the normal edit tiddler.
+- Only messages for the wiki a connection is using get sent to that connection,
+  potentially reducing the network load of a wiki.
+  - This also improves security and privacy because people who don't have
+    access to a wiki can't see that there is editing activity taking place or
+    see tiddler titles.
+- On the back-end the waiting list is removed which simplifies a lot
+- Hopefully there is correct handling for date fields now.
+  - This needs further testing.
+- Serve cached wikis if nothing has changed since the last time it was built
+- Added includePluginList and excludePluginList to the configuration.
+  - `includePluginList` is a list of plugins that should be served to every
+    wiki served by Bob, regardless of if they are in the tiddlywiki.info file.
+  - `excludePluginList` is a list of plugins that should not be served on any
+    wiki served by Bob regardless of if they are listed in the tiddlywiki.info
+    file.
+  - `excludePluginList` takes precidence over the `includePluginList` so if a
+    plugin is listed in both it will not be included. `excludePluginList` can
+    also override the `servePlugin` setting if you have that set to true, so it
+    can be used to make Bob serve normal tiddlywikis without any multi-user or
+    other Bob functionality.
+- The default file server url path is now `files` instead of `file` to match
+  the proposed updates to the core --listen command.
+- The deleteTiddler, editingTiddler and, cancelEditingTiddler messages are now
+  consistent with the saveTiddler message.
+  - Now removeTiddler is deleteTiddler
+- The wiki can now reconnect to a server after being disconnected
+- The wiki now keeps track of unsent messages when disconnected from the server
+  - The browser sends any unsent changes to the server when it reconnects
+  - The changes are also saved in a tiddler that can be exported for future
+    manual inclusion
+  - The server sends any changes that have happened since the browser was
+    disconnected
+  - Conflicts need to be taken care of in the browser.
+- The connection health is now determined by the socket state in the browser,
+  not the time it takes to receive a response to the heartbeat
+
+!! Version 1.0.2 Sourdough Biscuits
+
+- Fixed/Updated documentation
+  - for the getSetting macro (fixed typo)
+  - for the buildHTMLWiki message (added excludeList info)
+  - fixed the message about shutting down the server in the server actions tab
+- Fixed a bug where output single file html wikis would always be called
+  `index.html`
+- Added an optional excludeFilter attribute to the buildHTMLWiki message that
+  lists tiddlers that shouldn't be added to the exported wiki.
+- Added the option to set the location of editions using the editionsPath
+  setting.
+  - This shouldn't affect the environment variable method of setting the location.
+- Fixed a bug that would let the server try and load a wiki that didn't exist
+- Updated instructions to point to TiddlyWiki version 5.1.17
+
+!! Version 1.0.1 Sourdough
+
+- The Bob settings tab only has contents on the root wiki.
+
+!! Changed name to Bob and bumped version to 1.0.0
+
+!! Version 0.1.11
+
+- Improved handling for setting the websockets port number
+- Make all wikis use the settings from the root wiki (otherwise all served wikis would have to have the same port and host information set individually)
+- The dirty indicator no longer flashes on and off when it doesn't need to. It isn't perfect yet.
+
+!! Initial State
+
+This is working as the initial state
+
+- Two-way real-time syncing between the browser and file system
+  - Updates the wiki in the browser immediately when any changes are made to the file system
+  - Immediately save changes to tiddlers made in the browser to the file system
+  - Syncing can ignore tiddlers based on an editable exclude filter
+- Multi-User support
+  - Allows any number of people/computers/browser tabs to connect to the wiki
+    server and use or edit the same wiki(s) simultaneously.
+  - Prevents multiple people from editing the same tiddler at the same time by
+    disabling the edit button for tiddlers currently being edited
+- Multi-Wiki support, the plugin can serve multiple wikis at once, each served
+  wiki has all the features listed here.
+- Websockets!! (used on the back-end, can be used by other plugins in the
+  future)
+  - Adds a websocket interface to tiddlywiki (currently only used by this
+    plugin, a git plugin is currently being developed as well as plugins to run
+    scripts on the local computer from tiddlywiki)
+  - Adds an action widget that allows you to send arbitrary websocket messages
+    to the server. This can be used to do things like trigger shell scripts
+    from inside the wiki.
+- Adds a new command `wsserver` that starts up a minimal http and websocket
+  server used for the real-time communication between the browser and server.
+- Adds a new command `externalserver` which starts up the wiki without a server
+  so that you can use an external server, like an expressjs server.
+- Allows you to reset the tiddlywiki server from the browser using a websocket
+  message.
+- Lets you run shell scripts from inside the wiki
+- Everything is configurable from inside the wiki
+- Your connection to the server is monitored and you are warned if there is a
+  problem
+- Serve files from the local file system (like images) so that they can be
+  used in the wiki.
+- Build a single file version of any served wikis from within the wiki.
+- Websocket messages send a token from localstorage if one exists for authentication.
